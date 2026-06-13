@@ -6,7 +6,7 @@ A modern reimplementation of the FEEL concept originally developed by Hidehiro F
 
 ## Overview
 
-FEEL (Finite Element Environment Language) was a domain-specific language (DSL) for describing weak forms of partial differential equations and generating finite element analysis programs.
+FEEL (Finite Element Equation Language) was a domain-specific language (DSL) for describing weak forms of partial differential equations and generating finite element analysis programs.
 
 The original FEEL P2 system was developed in 1993-1994 and later evolved into feelfem.
 
