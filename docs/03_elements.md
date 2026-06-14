@@ -94,7 +94,11 @@ element P1[tri] {
 
 Element definitions may contain auxiliary variables.
 
-Auxiliary variables are evaluated during compilation and are used to simplify the definition of complex interpolation functions.
+Auxiliary variables are local to the element definition.
+
+Unlike quadrature auxiliary variables, element auxiliary variables are generally evaluated during element matrix assembly.
+
+The generated code evaluates these expressions for each element using the physical coordinates of the current element.
 
 Example:
 
