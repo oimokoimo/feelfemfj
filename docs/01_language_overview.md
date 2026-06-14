@@ -85,6 +85,7 @@ Values may be stored:
 * at quadrature points
 * on discontinuous interpolation spaces
 
+Element-wise variables do not require continuity between neighboring elements.
 Element-wise variables are suitable for:
 
 * constitutive models
@@ -131,7 +132,7 @@ uses different quadrature rules for different terms of the weak form.
 
 ---
 
-## FEEL as a PDE Compiler Framework
+## feelfem as a PDE Compiler Framework
 
 feelfem should be viewed as a **PDE compiler framework** rather than a finite element solver.
 
