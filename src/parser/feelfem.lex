@@ -7,10 +7,16 @@
 %option noyywrap
 %option yylineno
 
+
 DIGIT   [0-9]
 ID      [A-Za-z_][A-Za-z0-9_]*
 
 %%
+
+
+
+
+
 
 [ \t\r\n]+              ;
 
@@ -49,11 +55,7 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 "=="                    { return EQ; }
 "!="                    { return NE; }
 
-{DIGIT}+("."{DIGIT}+)?([eE][+-]?{DIGIT}+)? {
-                            return NUMBER;
-                        }
 
-{ID}                    { return IDENTIFIER; }
 
 "{"                     { return '{'; }
 "}"                     { return '}'; }
@@ -73,6 +75,18 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 "="                     { return '='; }
 "<"                     { return '<'; }
 ">"                     { return '>'; }
+
+
+{DIGIT}+("."{DIGIT}+)?([eE][+-]?{DIGIT}+)? {
+    yylval.num = std::atof(yytext);
+    return NUMBER;
+}
+
+{ID} {
+    yylval.str = strdup(yytext);
+    return IDENTIFIER;
+}
+
 
 .                       {
                             fprintf(stderr,

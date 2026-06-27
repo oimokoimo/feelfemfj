@@ -26,12 +26,22 @@ extern char *yytext;
 
 %}
 
+
+%union
+{
+  double        num;   /* float value    */
+  char*         str;   /* string value   */
+}
+
+%token <num> NUMBER
+%token <str> IDENTIFIER
+
+
 /* tokens */
 %token MESH VAR SCHEME PROGRAMMODEL
 %token POINT EDGE REGION DOMAIN VERTICES
 %token DOUBLE INT FEM EWISE VFEM
 %token IF THEN ELSE ENDIF
-%token IDENTIFIER NUMBER
 %token LE GE EQ NE
 %token AND OR NOT
 
@@ -92,6 +102,10 @@ point_list
 
 point_argument
     : IDENTIFIER '(' expr_list ')'
+    {
+        std::printf("point: %s\n",$1);
+        std::free($1);
+    }
     ;
 
 edge_statement
@@ -297,7 +311,7 @@ identifier_list
     : IDENTIFIER
     | identifier_list ',' IDENTIFIER
     ;
-
+    
 %%
 
 void yyerror(const char* s)

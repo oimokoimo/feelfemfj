@@ -3,7 +3,7 @@ mesh {
  region a[rect](a,b,c,d :[a,b,c],[k,l,m]);
  region b[tri] (a,b,c);
  domain dom(a,b);
- vertices [1000];
+ vertices (1000);
 }
 var {
  fem u[P1],v[P1];
