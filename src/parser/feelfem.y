@@ -20,6 +20,10 @@ int yylex(void);
 int yyparse(void);
 void yyerror(const char* s);
 
+extern int yylineno;
+extern char *yytext;
+
+
 %}
 
 /* tokens */
@@ -298,7 +302,8 @@ identifier_list
 
 void yyerror(const char* s)
 {
-    std::fprintf(stderr, "parse error: %s\n", s);
+    std::fprintf(stderr,
+    "parse error at line %d: near \"%s\" %s\n",yylineno,yytext, s);
 }
 
 int main(int argc, char** argv)
