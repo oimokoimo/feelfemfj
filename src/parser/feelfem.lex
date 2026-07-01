@@ -52,6 +52,8 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 "weq"                   { return WEQ; }
 "integral"              { return INTEGRAL; }
 "bintegral"             { return BINTEGRAL; }
+"dbc"                   { return DBC; }
+"nbc"                   { return NBC; }
 "on"                    { return ON; }
 
 

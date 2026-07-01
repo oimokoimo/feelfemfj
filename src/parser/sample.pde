@@ -18,7 +18,9 @@ scheme {
     quadrature tri4;
 
     weq: integral(dx(u)*dx(tu)+dy(u)*dy(tu))+integral[tri2](u*tu)-bintegral(g*tu) = 0;
-    
+
+    dbc : u = 100, on ab;
+    nbc : g = dk(u-100), on a,b;
  }
  dt = 0;
  dt = -10;
