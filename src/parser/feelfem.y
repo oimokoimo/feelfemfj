@@ -44,6 +44,8 @@ extern char *yytext;
 %token IF THEN ELSE ENDIF
 %token LE GE EQ NE
 %token AND OR NOT
+%token SOLVE SOLVER QUADRATURE WEQ
+%token INTEGRAL BINTEGRAL DBC NBC ON
 
 /* precedence */
 %left OR
@@ -228,6 +230,7 @@ scheme_items
 
 scheme_item
     : program_model_statement
+    | solve_block
     | statement
     ;
 
@@ -260,6 +263,66 @@ statement_list
     | statement_list statement
     ;
 
+/* ======== solve block ============================= */
+solve_block
+    : SOLVE '[' identifier_list ';' identifier_list ']' '{' solve_items '}'
+     {printf("solve block parsed\n");}
+    ;
+
+solve_items
+    :  /* empty */
+    | solve_items solve_item
+    ;
+
+solve_item
+    : solver_statement
+    | quadrature_statement
+    | weq_statement
+    | dbc_statement
+    | nbc_statement
+    | statement
+    ;
+
+solver_statement
+    : SOLVER IDENTIFIER ';'
+    ;
+
+quadrature_statement
+    : QUADRATURE IDENTIFIER ';'
+    ;
+
+weq_statement
+    : WEQ ':' integral_form ';'
+    | WEQ ':' integral_form '=' expression ';'
+      {printf("weq persed\n");}
+    | WEQ ':' integral_form '=' integral_form ';'
+    ;
+
+dbc_statement
+    : DBC ':' IDENTIFIER '=' expression ',' ON identifier_list ';'
+    ;
+
+nbc_statement
+    : NBC ':' IDENTIFIER '=' expression ',' ON identifier_list ';'
+    ;
+
+integral_form
+    : integral_term
+    | integral_form '+' integral_term
+    | integral_form '-' integral_term
+    ;
+
+integral_term
+    : integral_expr
+    | '(' integral_form ')'
+    ;
+
+integral_expr
+    : INTEGRAL '(' expression ')'
+    | INTEGRAL '[' IDENTIFIER ']' '(' expression ')'
+    | BINTEGRAL '(' expression ')'
+    | BINTEGRAL '[' IDENTIFIER ']' '(' expression ')'
+    ;
 /* ===================== common ===================== */
 
 expression

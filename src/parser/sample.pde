@@ -12,6 +12,14 @@ var {
  ewise a[gaux];
 }
 scheme {
+
+ solve [u; tu] {
+    solver bicgstab;
+    quadrature tri4;
+
+    weq: integral(dx(u)*dx(tu)+dy(u)*dy(tu))+integral[tri2](u*tu)-bintegral(g*tu) = 0;
+    
+ }
  dt = 0;
  dt = -10;
 }

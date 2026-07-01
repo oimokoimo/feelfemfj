@@ -46,6 +46,15 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 "else"                  { return ELSE; }
 "endif"                 { return ENDIF; }
 
+"solve"                 { return SOLVE; }
+"solver"                { return SOLVER; }
+"quadrature"            { return QUADRATURE; }
+"weq"                   { return WEQ; }
+"integral"              { return INTEGRAL; }
+"bintegral"             { return BINTEGRAL; }
+"on"                    { return ON; }
+
+
 "&&"                    { return AND; }
 "||"                    { return OR; }
 "!"                     { return NOT; }
