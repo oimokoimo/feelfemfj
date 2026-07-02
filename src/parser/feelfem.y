@@ -44,6 +44,7 @@ extern char *yytext;
 %token IF THEN ELSE ENDIF
 %token LE GE EQ NE
 %token AND OR NOT
+%token ELEMENT
 %token SOLVE SOLVER QUADRATURE WEQ
 %token INTEGRAL BINTEGRAL DBC NBC ON
 
@@ -71,6 +72,8 @@ sections
 section
     : mesh_section
     | var_section
+    | element_definition
+    | quadrature_definition
     | scheme_section
     ;
 
@@ -216,6 +219,94 @@ field_decl_list
 field_decl
     : IDENTIFIER '[' IDENTIFIER ']'
     ;
+
+/* ====================quadrature ====================== */
+quadrature_definition
+    : QUADRATURE IDENTIFIER '[' IDENTIFIER ']' '{' quadrature_items '}'
+    ;
+
+quadrature_items
+    : /* empty */
+    | quadrature_items quadrature_item
+    ;
+
+quadrature_item
+    : quad_var_declaration
+    | quad_assignment_statement
+    | quad_point_statement
+    ;
+
+quad_var_declaration
+    : DOUBLE quad_var_list ';'
+    ;
+
+quad_var_list
+    : quad_var
+    | quad_var_list ',' quad_var
+    ;
+
+quad_var
+    : IDENTIFIER
+    | IDENTIFIER '=' expression
+    ;
+
+quad_assignment_statement
+    : IDENTIFIER '=' expression ';'
+    ;
+
+quad_point_statement
+    : '(' expression_list ')' ':' expression ';'
+    ;
+
+expression_list
+    : expression
+    | expression_list ',' expression
+    ;
+
+
+/* ====================element==================== */
+
+element_definition
+    : ELEMENT IDENTIFIER '[' IDENTIFIER']' '{' element_items '}'
+    ;
+
+element_items
+    : /* empty */
+    | element_items element_item
+    ;
+
+element_item
+    : elem_var_declaration
+    | elem_assignment_statement
+    | elem_point_statement
+    ;
+elem_var_declaration
+    : DOUBLE elem_var_list ';'
+    ;
+
+elem_var_list
+    : elem_var
+    | elem_var_list ',' elem_var
+    ;
+
+elem_var
+    : IDENTIFIER
+    | IDENTIFIER '=' expression
+    ;
+
+elem_assignment_statement
+    : IDENTIFIER '=' expression ';'
+    ;
+
+elem_point_statement
+    : '(' elem_coord_list ')' ':' expression ';'
+    ;
+
+elem_coord_list
+    : expression
+    | elem_coord_list ',' expression
+    ;
+
 
 /* ===================== scheme ===================== */
 

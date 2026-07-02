@@ -26,6 +26,7 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 "mesh"                  { return MESH; }
 "var"                   { return VAR; }
 "scheme"                { return SCHEME; }
+"element"               { return ELEMENT; }
 
 "ProgramModel"          { return PROGRAMMODEL; }
 
