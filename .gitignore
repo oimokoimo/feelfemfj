@@ -18,6 +18,7 @@ cmake-build-*/
 # Object files
 *.o
 *.obj
+*.gch
 
 # Libraries
 *.a
