@@ -20,6 +20,7 @@
  */
 #ifndef FEELFEM2_ASTNODE_HPP
 #define FEELFEM2_ASTNODE_HPP
+#include <iostream>
 #include <memory>
 
 namespace feelfem2 {
@@ -27,6 +28,13 @@ namespace feelfem2 {
 struct SourceLocation {
     int line   = 0;
     int column = 0;
+
+    SourceLocation() = default;
+
+    SourceLocation(int l, int c = 0)
+	    : line(l),column(c)
+       {
+       }
 };
 
 class AstNode {
@@ -36,6 +44,11 @@ public:
         : location(loc) {}
 
     virtual ~AstNode() = default;
+
+    virtual void printout() const 
+    {
+	    std::cout << "AstNode\n";
+    }
 
     const SourceLocation& GetLocation() const {
         return location;

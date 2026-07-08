@@ -22,7 +22,7 @@
 
 #include <string>
 
-#include "../ast/AstNode.hpp"
+#include "AstNode.hpp"
 
 namespace feelfem2
 {
@@ -53,6 +53,10 @@ public:
     void SetModelName(const std::string& name)
     {
         modelName = name;
+    }
+
+    void printout(void) const override{
+	    std::cout << "ProgramModel is " << modelName << "\n"; 
     }
 
 private:

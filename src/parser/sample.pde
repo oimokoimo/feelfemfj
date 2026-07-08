@@ -76,6 +76,8 @@ quadrature tet2[tetra] {   /* quadratic order */
 
 scheme {
 
+ ProgramModel feelfem2018;
+
  solve [u,v; tu,tv] {
     solver bicgstab;
     quadrature tri4;

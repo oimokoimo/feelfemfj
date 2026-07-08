@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+
 int yylex(void);
 int yyparse(void);
 void yyerror(const char* s);
@@ -26,11 +27,17 @@ extern char *yytext;
 
 %}
 
+%code requires {
+#include "../ast/Ast.hpp"
+}
+
 
 %union
 {
   double        num;   /* float value    */
   char*         str;   /* string value   */
+
+  feelfem2::AstNode* node;
 }
 
 %token <num> NUMBER
@@ -47,6 +54,9 @@ extern char *yytext;
 %token ELEMENT
 %token SOLVE SOLVER QUADRATURE WEQ
 %token INTEGRAL BINTEGRAL DBC NBC ON
+
+/* types */
+%type <node>program_model_statement
 
 /* precedence */
 %left OR
@@ -326,7 +336,13 @@ scheme_item
     ;
 
 program_model_statement
-    : PROGRAMMODEL IDENTIFIER ';'
+    : PROGRAMMODEL IDENTIFIER ';' 
+    {
+        auto* pm = new feelfem2::ProgramModel($2,feelfem2::SourceLocation(yylineno));
+        pm->printout();
+        $$ = pm; 
+        free($2);
+    }
     ;
 
 statement
