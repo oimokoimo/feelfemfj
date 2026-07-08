@@ -1,0 +1,20 @@
+/*
+ *  feelfem2
+ *  Copyright (C) 2025-2026 Hidehiro Fujio and contributors
+ *
+ *  SPDX-License-Identifier: BSD-3-Clause
+ *
+ *  Filename : AstNode.hpp
+ *  Date     : 2026/07/03
+ *
+ *  Purpose  : Abstract Syntax Tree (AST) base class definition
+ *
+ *  Repository:
+ *      https://github.com/oimokoimo/feelfemfj
+ *
+ *  Notes:
+ *      - Base class of all AST nodes.
+ *      - Stores source location information.
+ *      - Modern C++20 implementation.
+ *
+ */

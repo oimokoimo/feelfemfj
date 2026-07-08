@@ -1,5 +1,6 @@
 mesh {
  point a(0,0),p(0,1);
+ point d(2,0);
  region a[rect](a,b,c,d :[a,b,c],[k,l,m]);
  region b[tri] (a,b,c);
  domain dom(a,b);

@@ -4,7 +4,7 @@
 
 #include "AstNode.hpp"
 #include "ProgramModel.hpp"
-// #include "MeshBlock.hpp"
+#include "Mesh.hpp"
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"
 // #include "SolveBlock.hpp"

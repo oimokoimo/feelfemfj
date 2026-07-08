@@ -58,6 +58,20 @@ extern char *yytext;
 /* types */
 %type <node>program_model_statement
 
+%type <node> mesh_section
+%type <node> mesh_items
+%type <node> mesh_item
+%type <node> point_statement
+%type <node> point_list
+%type <node> point_argument
+
+%type <node> expr_list
+%type <node> expression_list
+%type <node> expression
+%type <node> primary_expression
+%type <node> binary_expression
+%type <node> unary_expression
+
 /* precedence */
 %left OR
 %left AND
@@ -91,23 +105,50 @@ section
 
 mesh_section
     : MESH '{' mesh_items '}'
+       {
+          $$ = $3;
+       }
     ;
 
 mesh_items
     : /* empty */
+      {
+        $$ = nullptr;
+      }
     | mesh_items mesh_item
+      {
+        $$ = $1 ? $1 : $2;
+      }
     ;
 
 mesh_item
     : point_statement
+        {
+          $$ = $1;
+        }
     | edge_statement
+        {
+          $$ = nullptr;
+        }
     | region_statement
+        {
+          $$ = nullptr;
+        }
     | domain_statement
+        {
+          $$ = nullptr;
+        }
     | vertices_statement
+        {
+          $$ = nullptr;
+        }
     ;
 
 point_statement
     : POINT point_list ';'
+        {
+          $$ = $2;
+        }
     ;
 
 point_list
@@ -118,8 +159,14 @@ point_list
 point_argument
     : IDENTIFIER '(' expr_list ')'
     {
-        std::printf("point: %s\n",$1);
-        std::free($1);
+          auto *p = new feelfem2::PointDecl(
+             std::string($1),
+             $3,
+             feelfem2::SourceLocation{ yylineno , 0 }
+          );
+          p->printout();
+          $$ = p;
+          free($1);
     }
     ;
 
@@ -270,6 +317,9 @@ quad_point_statement
 
 expression_list
     : expression
+       {
+          $$ = nullptr;
+       }
     | expression_list ',' expression
     ;
 
@@ -434,21 +484,31 @@ integral_expr
 
 expression
     : primary_expression
+        { $$ = $1; }
     | unary_expression
+        { $$ = $1; }
     | binary_expression
+        { $$ = $1; }
     ;
 
 primary_expression
     : NUMBER
+       { $$ = nullptr; }
     | IDENTIFIER
+       { $$ = nullptr; free($1); }
     | IDENTIFIER '(' argument_list_opt ')'
+       { $$ = nullptr; free($1); }
     | '(' expression ')'
+       { $$ = $2; }
     ;
 
 unary_expression
     : '+' expression %prec UPLUS
+       { $$ = $2; }
     | '-' expression %prec UMINUS
+       { $$ = $2; }
     | NOT expression
+       { $$ = $2; }
     ;
 
 binary_expression

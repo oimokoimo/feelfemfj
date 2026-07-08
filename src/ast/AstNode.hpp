@@ -47,7 +47,7 @@ public:
 
     virtual void printout() const 
     {
-	    std::cout << "AstNode\n";
+	    std::cout << "AstNode at line" << location.line <<"\n";
     }
 
     const SourceLocation& GetLocation() const {
