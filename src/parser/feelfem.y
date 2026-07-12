@@ -500,6 +500,7 @@ primary_expression
               $1,
               feelfem2::SourceLocation{yylineno, 0}
                );
+         $$->printout();
        }
     | IDENTIFIER
        { $$ = new feelfem2::IdentifierExpr( 
