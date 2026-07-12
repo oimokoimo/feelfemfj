@@ -5,6 +5,8 @@
 #include "AstNode.hpp"
 #include "ProgramModel.hpp"
 #include "Mesh.hpp"
+#include "Expression.hpp"
+
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"
 // #include "SolveBlock.hpp"

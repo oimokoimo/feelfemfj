@@ -38,6 +38,7 @@ extern char *yytext;
   char*         str;   /* string value   */
 
   feelfem2::AstNode* node;
+  feelfem2::Expression* expr;
 }
 
 %token <num> NUMBER
@@ -65,12 +66,14 @@ extern char *yytext;
 %type <node> point_list
 %type <node> point_argument
 
+/* expression */
 %type <node> expr_list
 %type <node> expression_list
-%type <node> expression
-%type <node> primary_expression
-%type <node> binary_expression
-%type <node> unary_expression
+
+%type <expr> expression
+%type <expr> primary_expression
+%type <expr> binary_expression
+%type <expr> unary_expression
 
 /* precedence */
 %left OR
@@ -493,9 +496,20 @@ expression
 
 primary_expression
     : NUMBER
-       { $$ = nullptr; }
+       { $$ = new feelfem2::NumberExpr(
+              $1,
+              feelfem2::SourceLocation{yylineno, 0}
+               );
+       }
     | IDENTIFIER
-       { $$ = nullptr; free($1); }
+       { $$ = new feelfem2::IdentifierExpr( 
+                    std::string($1),
+                    feelfem2::SourceLocation{yylineno, 0}
+              );
+               free($1);
+
+       }
+
     | IDENTIFIER '(' argument_list_opt ')'
        { $$ = nullptr; free($1); }
     | '(' expression ')'
@@ -534,6 +548,9 @@ argument_list_opt
 
 expr_list
     : expression
+        {
+           $$=$1;
+        }
     | expr_list ',' expression
     ;
 
