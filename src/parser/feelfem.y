@@ -76,6 +76,7 @@ extern char *yytext;
 %type <expr> unary_expression
 
 %type <node> field_decl
+%type <node> scalar_decl
 
 /* precedence */
 %left OR
@@ -258,7 +259,30 @@ scalar_decl_list
 
 scalar_decl
     : IDENTIFIER
+      {
+          auto* decl = new feelfem2::VariableDeclarator(
+              std::string($1),
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+
+          decl->printout();
+          $$ = decl;
+
+          free($1);
+      }
     | IDENTIFIER '=' expression
+      {
+          auto* decl = new feelfem2::VariableDeclarator(
+              std::string($1),
+              dynamic_cast<feelfem2::Expression*>($3),
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+
+          decl->printout();
+          $$ = decl;
+
+          free($1);
+      }
     ;
 
 fem_var_statement

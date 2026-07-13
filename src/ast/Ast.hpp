@@ -6,7 +6,10 @@
 #include "ProgramModel.hpp"
 #include "Mesh.hpp"
 #include "Expression.hpp"
+
+// var block
 #include "FieldDeclarator.hpp"
+#include "VariableDeclarator.hpp"
 
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"

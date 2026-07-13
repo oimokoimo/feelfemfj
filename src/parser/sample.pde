@@ -8,7 +8,7 @@ mesh {
 }
 var {
  fem u[P1],v[P1];
- double a = 0, b;
+ double a = 1000, b;
  int a,b,c;
  ewise a[gaux];
 }
