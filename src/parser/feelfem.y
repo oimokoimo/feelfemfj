@@ -75,6 +75,8 @@ extern char *yytext;
 %type <expr> binary_expression
 %type <expr> unary_expression
 
+%type <node> field_decl
+
 /* precedence */
 %left OR
 %left AND
@@ -278,6 +280,19 @@ field_decl_list
 
 field_decl
     : IDENTIFIER '[' IDENTIFIER ']'
+      {
+          auto* field = new feelfem2::FieldDeclarator(
+              std::string($1),
+              std::string($3),
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+
+          field->printout();
+          $$ = field;
+
+          free($1);
+          free($3);
+      } 
     ;
 
 /* ====================quadrature ====================== */
