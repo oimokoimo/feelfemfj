@@ -92,19 +92,18 @@ public:
     }
 
     void printout() const override
+{
+    std::cout << "VariableDeclarator"
+              << " name=" << variableName
+              << " line=" << GetLocation().line
+              << '\n';
+
+    if (initializer)
     {
-        std::cout
-            << "VariableDeclarator "
-            << variableName;
-
-        if (initializer) {
-            std::cout << " = " ;  initializer->printout(); 
-	}
-
-        std::cout
-            << " line " << GetLocation().line
-            << std::endl;
+        std::cout << "  initializer:\n";
+        initializer->printout();
     }
+}
 
 private:
 

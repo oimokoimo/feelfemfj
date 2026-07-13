@@ -28,7 +28,9 @@ extern char *yytext;
 %}
 
 %code requires {
+#include <vector>
 #include "../ast/Ast.hpp"
+
 }
 
 
@@ -39,6 +41,9 @@ extern char *yytext;
 
   feelfem2::AstNode* node;
   feelfem2::Expression* expr;
+
+  std::vector<feelfem2::VariableDeclarator*>* varDecList;
+  std::vector<feelfem2::FieldDeclarator*>*fieldDecList;
 }
 
 %token <num> NUMBER
@@ -76,7 +81,17 @@ extern char *yytext;
 %type <expr> unary_expression
 
 %type <node> field_decl
+
+%type <node> fem_var_statement
+%type <node> ewise_var_statement
+%type <node> vfem_var_statement
+%type <fieldDecList> field_decl_list
+
+
+%type <node> scalar_var_statement
 %type <node> scalar_decl
+%type <varDecList> scalar_decl_list
+
 
 /* precedence */
 %left OR
@@ -249,57 +264,168 @@ var_item
 
 scalar_var_statement
     : DOUBLE scalar_decl_list ';'
-    | INT    scalar_decl_list ';'
+      {
+          auto* declaration =
+              new feelfem2::VariableDeclaration(
+                  feelfem2::ScalarType::Double,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* declarator : *$2)
+          {
+              declaration->AddDeclarator(declarator);
+          }
+
+          delete $2;
+
+          declaration->printout();
+          $$ = declaration;
+      }
+    | INT scalar_decl_list ';'
+      {
+          auto* declaration =
+              new feelfem2::VariableDeclaration(
+                  feelfem2::ScalarType::Int,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* declarator : *$2)
+          {
+              declaration->AddDeclarator(declarator);
+          }
+
+          delete $2;
+
+          declaration->printout();
+          $$ = declaration;
+      }
     ;
+
 
 scalar_decl_list
     : scalar_decl
+      {
+          $$ = new std::vector<feelfem2::VariableDeclarator*>;
+
+          $$->push_back(
+              static_cast<feelfem2::VariableDeclarator*>($1)
+          );
+      }
     | scalar_decl_list ',' scalar_decl
+      {
+          $1->push_back(
+              static_cast<feelfem2::VariableDeclarator*>($3)
+          );
+
+          $$ = $1;
+      }
     ;
+
 
 scalar_decl
     : IDENTIFIER
       {
-          auto* decl = new feelfem2::VariableDeclarator(
-              std::string($1),
-              feelfem2::SourceLocation{yylineno, 0}
-          );
+          auto* decl =
+              new feelfem2::VariableDeclarator(
+                  std::string($1),
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
 
-          decl->printout();
           $$ = decl;
-
           free($1);
       }
     | IDENTIFIER '=' expression
       {
-          auto* decl = new feelfem2::VariableDeclarator(
-              std::string($1),
-              dynamic_cast<feelfem2::Expression*>($3),
-              feelfem2::SourceLocation{yylineno, 0}
-          );
+          auto* decl =
+              new feelfem2::VariableDeclarator(
+                  std::string($1),
+                  $3,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
 
-          decl->printout();
           $$ = decl;
-
           free($1);
       }
     ;
 
 fem_var_statement
     : FEM field_decl_list ';'
+      {
+          auto* declaration =
+              new feelfem2::FieldDeclaration(
+                  feelfem2::FieldType::Fem,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* declarator : *$2)
+          {
+              declaration->AddDeclarator(declarator);
+          }
+
+          delete $2;
+
+          declaration->printout();
+          $$ = declaration;
+      }
     ;
 
 ewise_var_statement
     : EWISE field_decl_list ';'
+      {
+          auto* declaration =
+              new feelfem2::FieldDeclaration(
+                  feelfem2::FieldType::Ewise,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* declarator : *$2)
+          {
+              declaration->AddDeclarator(declarator);
+          }
+
+          delete $2;
+
+          declaration->printout();
+          $$ = declaration;
+      }
     ;
 
 vfem_var_statement
     : VFEM field_decl_list ';'
+      {
+          auto* declaration =
+              new feelfem2::FieldDeclaration(
+                  feelfem2::FieldType::Vfem,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* declarator : *$2)
+          {
+              declaration->AddDeclarator(declarator);
+          }
+
+          delete $2;
+
+          declaration->printout();
+          $$ = declaration;
+      }
     ;
 
 field_decl_list
     : field_decl
+      {
+        $$ = new std::vector<feelfem2::FieldDeclarator*>;
+        $$->push_back(
+            static_cast<feelfem2::FieldDeclarator*>($1)
+        );
+      }
     | field_decl_list ',' field_decl
+      {
+        $1->push_back(
+            static_cast<feelfem2::FieldDeclarator*>($3)
+        );
+        $$ = $1;
+      }
     ;
 
 field_decl

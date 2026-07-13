@@ -10,6 +10,9 @@
 // var block
 #include "FieldDeclarator.hpp"
 #include "VariableDeclarator.hpp"
+#include "VariableDeclaration.hpp"
+#include "FieldDeclaration.hpp"
+#include "Declaration.hpp"
 
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"
