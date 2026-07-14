@@ -44,6 +44,7 @@ extern char *yytext;
 
   std::vector<feelfem2::VariableDeclarator*>* varDecList;
   std::vector<feelfem2::FieldDeclarator*>*fieldDecList;
+  std::vector<feelfem2::Declaration*>* declarationList;
 }
 
 %token <num> NUMBER
@@ -80,16 +81,19 @@ extern char *yytext;
 %type <expr> binary_expression
 %type <expr> unary_expression
 
-%type <node> field_decl
+/* var section */
+%type <node> var_section
+%type <declarationList> var_items
+%type <node> var_item
 
+%type <node> field_decl
 %type <node> fem_var_statement
 %type <node> ewise_var_statement
 %type <node> vfem_var_statement
 %type <fieldDecList> field_decl_list
 
-
-%type <node> scalar_var_statement
 %type <node> scalar_decl
+%type <node> scalar_var_statement
 %type <varDecList> scalar_decl_list
 
 
@@ -248,18 +252,58 @@ vertices_statement
 
 var_section
     : VAR '{' var_items '}'
+      {
+          auto* section =
+              new feelfem2::VarSection(
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* declaration : *$3)
+          {
+              section->AddDeclaration(
+                  static_cast<feelfem2::Declaration*>(declaration)
+              );
+          }
+
+          delete $3;
+
+          section->printout();
+          $$ = section;
+      }
     ;
 
 var_items
     : /* empty */
+      {
+          $$ = new std::vector<feelfem2::Declaration*>;
+      }
     | var_items var_item
+      {
+          $1->push_back(
+              static_cast<feelfem2::Declaration*>($2)
+          );
+
+          $$ = $1;
+      }
     ;
 
 var_item
     : scalar_var_statement
+      {
+         $$ = $1;
+      }
     | fem_var_statement
+      {
+         $$ = $1;
+      }
     | ewise_var_statement
+      {
+         $$ = $1;
+      }
     | vfem_var_statement
+      {
+         $$ = $1;
+      }
     ;
 
 scalar_var_statement
@@ -278,7 +322,7 @@ scalar_var_statement
 
           delete $2;
 
-          declaration->printout();
+//          declaration->printout();
           $$ = declaration;
       }
     | INT scalar_decl_list ';'
@@ -296,7 +340,7 @@ scalar_var_statement
 
           delete $2;
 
-          declaration->printout();
+ //         declaration->printout();
           $$ = declaration;
       }
     ;
@@ -364,7 +408,7 @@ fem_var_statement
 
           delete $2;
 
-          declaration->printout();
+//          declaration->printout();
           $$ = declaration;
       }
     ;
@@ -385,7 +429,7 @@ ewise_var_statement
 
           delete $2;
 
-          declaration->printout();
+//          declaration->printout();
           $$ = declaration;
       }
     ;
@@ -406,7 +450,7 @@ vfem_var_statement
 
           delete $2;
 
-          declaration->printout();
+//          declaration->printout();
           $$ = declaration;
       }
     ;
@@ -437,7 +481,7 @@ field_decl
               feelfem2::SourceLocation{yylineno, 0}
           );
 
-          field->printout();
+//          field->printout();
           $$ = field;
 
           free($1);

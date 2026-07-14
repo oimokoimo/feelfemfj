@@ -8,6 +8,7 @@
 #include "Expression.hpp"
 
 // var block
+#include "VarSection.hpp"
 #include "FieldDeclarator.hpp"
 #include "VariableDeclarator.hpp"
 #include "VariableDeclaration.hpp"
