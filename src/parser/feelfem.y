@@ -12,10 +12,17 @@
  *
  */
 
+%code requires {
+#include <vector>
+#include "../ast/Ast.hpp"
+
+}
  %{
 #include <cstdio>
 #include <cstdlib>
 
+
+#include "../ast/Ast.hpp"
 
 int yylex(void);
 int yyparse(void);
@@ -24,14 +31,16 @@ void yyerror(const char* s);
 extern int yylineno;
 extern char *yytext;
 
+feelfem2::VarSection * gVarSection = nullptr;
+
 
 %}
 
-%code requires {
-#include <vector>
-#include "../ast/Ast.hpp"
-
-}
+//%code requires {
+//#include <vector>
+//#include "../ast/Ast.hpp"
+//
+//}
 
 
 %union
@@ -267,7 +276,8 @@ var_section
 
           delete $3;
 
-          section->printout();
+        //  section->printout();
+          gVarSection = section;
           $$ = section;
       }
     ;
@@ -781,6 +791,16 @@ int main(int argc, char** argv)
 {
     if (yyparse() == 0) {
         std::printf("Parse OK\n");
+
+// varSection
+
+        if(gVarSection)
+        {
+          std::cout << "\n--- VarSection AST ---\n";
+          gVarSection->printout();
+        }
+
+
         return 0;
     }
 
