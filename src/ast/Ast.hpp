@@ -16,10 +16,16 @@
 
 // mesh block
 #include "Mesh.hpp"
+
 #include "PointDecl.hpp"
 #include "PointStatement.hpp"
+
 #include "EdgeDecl.hpp"
 #include "EdgeStatement.hpp"
+
+#include "RegionBoundary.hpp"
+#include "RegionDecl.hpp"
+#include "RegionStatement.hpp"
 
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"

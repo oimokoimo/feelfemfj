@@ -60,6 +60,10 @@ feelfem2::VarSection * gVarSection = nullptr;
   std::vector<feelfem2::VariableDeclarator*>* varDecList;
   std::vector<feelfem2::FieldDeclarator*>*fieldDecList;
   std::vector<feelfem2::Declaration*>* declarationList;
+
+  std::vector<std::vector<std::string>>*holeIdentifierList;
+  feelfem2::RegionBoundary* regionBoundary;
+  std::vector<feelfem2::RegionDecl*>* regionDeclList;
 }
 
 %token <num> NUMBER
@@ -117,9 +121,18 @@ feelfem2::VarSection * gVarSection = nullptr;
 %type <node> scalar_var_statement
 %type <varDecList> scalar_decl_list
 
+/* mesh section */
 %type <node> edge_argument
 %type <edgeDeclList> edge_list
 %type <node> edge_statement
+
+%type <node> region_statement
+%type <regionDeclList> region_list
+%type <node> region_argument
+
+%type <regionBoundary> region_identifier_list
+%type <holeIdentifierList> hole_identifier_list
+
 
 
 /* precedence */
@@ -301,25 +314,106 @@ edge_argument
 
 region_statement
     : REGION region_list ';'
+      {
+          auto* statement =
+              new feelfem2::RegionStatement(
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* region : *$2)
+          {
+              statement->AddRegion(region);
+          }
+
+          delete $2;
+
+//          statement->printout();
+
+          $$ = statement;
+      }
     ;
 
 region_list
     : region_argument
+      {
+          $$ = new std::vector<feelfem2::RegionDecl*>;
+
+          $$->push_back(
+              static_cast<feelfem2::RegionDecl*>($1)
+          );
+      }
     | region_list ',' region_argument
+      {
+          $1->push_back(
+              static_cast<feelfem2::RegionDecl*>($3)
+          );
+
+          $$ = $1;
+      }
     ;
 
 region_argument
     : IDENTIFIER '[' IDENTIFIER ']' '(' region_identifier_list ')'
+      {
+          auto* region = new feelfem2::RegionDecl(
+              std::string($1),
+              std::string($3),
+              std::move($6->outerBoundary),
+              std::move($6->holes),
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+
+          delete $6;
+
+          $$ = region;
+
+          free($1);
+          free($3);
+      }
     ;
 
 region_identifier_list
     : identifier_list
+      {
+          auto* boundary = new feelfem2::RegionBoundary;
+
+          boundary->outerBoundary = std::move(*$1);
+
+          delete $1;
+
+          $$ = boundary;
+      }
     | identifier_list ':' hole_identifier_list
+      {
+          auto* boundary = new feelfem2::RegionBoundary;
+
+          boundary->outerBoundary = std::move(*$1);
+          boundary->holes         = std::move(*$3);
+
+          delete $1;
+          delete $3;
+
+          $$ = boundary;
+      }
     ;
 
 hole_identifier_list
     : '[' identifier_list ']'
+      {
+          $$ = new std::vector<std::vector<std::string>>;
+
+          $$->push_back(std::move(*$2));
+
+          delete $2;
+      }
     | hole_identifier_list ',' '[' identifier_list ']'
+      {
+          $1->push_back(std::move(*$4));
+
+          delete $4;
+
+          $$ = $1;
+      }
     ;
 
 domain_statement
