@@ -18,6 +18,8 @@
 #include "Mesh.hpp"
 #include "PointDecl.hpp"
 #include "PointStatement.hpp"
+#include "EdgeDecl.hpp"
+#include "EdgeStatement.hpp"
 
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"

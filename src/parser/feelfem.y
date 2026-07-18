@@ -49,10 +49,13 @@ feelfem2::VarSection * gVarSection = nullptr;
   char*         str;   /* string value   */
 
   feelfem2::AstNode* node;
+  std::vector<std::string>* identifierList;
   feelfem2::Expression* expr;
 
   std::vector<feelfem2::Expression*>*exprList;
   std::vector<feelfem2::PointDecl*>* pointDeclList;
+
+  std::vector<feelfem2::EdgeDecl *>* edgeDeclList;
 
   std::vector<feelfem2::VariableDeclarator*>* varDecList;
   std::vector<feelfem2::FieldDeclarator*>*fieldDecList;
@@ -85,6 +88,9 @@ feelfem2::VarSection * gVarSection = nullptr;
 %type <pointDeclList> point_list
 %type <node> point_argument
 
+/* identifier list */
+%type <identifierList> identifier_list
+
 /* expression */
 %type <node> expression_list
 
@@ -94,6 +100,7 @@ feelfem2::VarSection * gVarSection = nullptr;
 %type <expr> primary_expression
 %type <expr> binary_expression
 %type <expr> unary_expression
+
 
 /* var section */
 %type <node> var_section
@@ -109,6 +116,10 @@ feelfem2::VarSection * gVarSection = nullptr;
 %type <node> scalar_decl
 %type <node> scalar_var_statement
 %type <varDecList> scalar_decl_list
+
+%type <node> edge_argument
+%type <edgeDeclList> edge_list
+%type <node> edge_statement
 
 
 /* precedence */
@@ -237,15 +248,55 @@ point_argument
 
 edge_statement
     : EDGE edge_list ';'
+      {
+          auto* statement =
+              new feelfem2::EdgeStatement(
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* edge : *$2)
+          {
+              statement->AddEdge(edge);
+          }
+//          statement->printout();
+
+          delete $2;
+          $$ = statement;
+      }
     ;
 
 edge_list
     : edge_argument
+      {
+          $$ = new std::vector<feelfem2::EdgeDecl*>;
+
+          $$->push_back(
+              static_cast<feelfem2::EdgeDecl*>($1)
+          );
+      }
     | edge_list ',' edge_argument
+      {
+          $1->push_back(
+              static_cast<feelfem2::EdgeDecl*>($3)
+          );
+
+          $$ = $1;
+      }
     ;
 
 edge_argument
     : IDENTIFIER '(' identifier_list ')'
+      {
+          auto* edge =
+              new feelfem2::EdgeDecl(
+                  std::string($1),
+                  $3,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          $$ = edge;
+          free($1);
+      }
     ;
 
 region_statement
@@ -812,7 +863,17 @@ expr_list
 
 identifier_list
     : IDENTIFIER
+      {
+          $$ = new std::vector<std::string>;
+          $$->push_back(std::string($1));
+          free($1);
+      }
     | identifier_list ',' IDENTIFIER
+      {
+          $1->push_back(std::string($3));
+          free($3);
+          $$ = $1;
+      }
     ;
     
 %%
