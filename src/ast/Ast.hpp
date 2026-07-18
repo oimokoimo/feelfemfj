@@ -4,7 +4,6 @@
 
 #include "AstNode.hpp"
 #include "ProgramModel.hpp"
-#include "Mesh.hpp"
 #include "Expression.hpp"
 
 // var block
@@ -14,6 +13,11 @@
 #include "VariableDeclaration.hpp"
 #include "FieldDeclaration.hpp"
 #include "Declaration.hpp"
+
+// mesh block
+#include "Mesh.hpp"
+#include "PointDecl.hpp"
+#include "PointStatement.hpp"
 
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"

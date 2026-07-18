@@ -51,6 +51,9 @@ feelfem2::VarSection * gVarSection = nullptr;
   feelfem2::AstNode* node;
   feelfem2::Expression* expr;
 
+  std::vector<feelfem2::Expression*>*exprList;
+  std::vector<feelfem2::PointDecl*>* pointDeclList;
+
   std::vector<feelfem2::VariableDeclarator*>* varDecList;
   std::vector<feelfem2::FieldDeclarator*>*fieldDecList;
   std::vector<feelfem2::Declaration*>* declarationList;
@@ -77,15 +80,17 @@ feelfem2::VarSection * gVarSection = nullptr;
 %type <node> mesh_section
 %type <node> mesh_items
 %type <node> mesh_item
+
 %type <node> point_statement
-%type <node> point_list
+%type <pointDeclList> point_list
 %type <node> point_argument
 
 /* expression */
-%type <node> expr_list
 %type <node> expression_list
 
 %type <expr> expression
+%type <exprList> expr_list
+
 %type <expr> primary_expression
 %type <expr> binary_expression
 %type <expr> unary_expression
@@ -180,14 +185,41 @@ mesh_item
 
 point_statement
     : POINT point_list ';'
-        {
-          $$ = $2;
-        }
+      {
+          auto* statement =
+              new feelfem2::PointStatement(
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* point : *$2)
+          {
+              statement->AddPoint(point);
+          }
+       //   statement->printout();
+
+          delete $2;
+
+          $$ = statement;
+      }
     ;
 
 point_list
     : point_argument
+      {
+          $$ = new std::vector<feelfem2::PointDecl*>;
+
+          $$->push_back(
+              static_cast<feelfem2::PointDecl*>($1)
+          );
+      }
     | point_list ',' point_argument
+      {
+          $1->push_back(
+              static_cast<feelfem2::PointDecl*>($3)
+          );
+
+          $$ = $1;
+      }
     ;
 
 point_argument
@@ -198,7 +230,6 @@ point_argument
              $3,
              feelfem2::SourceLocation{ yylineno , 0 }
           );
-          p->printout();
           $$ = p;
           free($1);
     }
@@ -768,10 +799,15 @@ argument_list_opt
 
 expr_list
     : expression
-        {
-           $$=$1;
-        }
+      {
+          $$ = new std::vector<feelfem2::Expression*>;
+          $$->push_back($1);
+      }
     | expr_list ',' expression
+      {
+          $1->push_back($3);
+          $$ = $1;
+      }
     ;
 
 identifier_list
