@@ -322,64 +322,7 @@ private:
     ExpressionPtr right;
 };
 
-// ------------------------------------------------------------
-// FunctionCallExpr
-// ------------------------------------------------------------
 
-class FunctionCallExpr : public Expression
-{
-public:
-    FunctionCallExpr(std::string functionName,
-                     const SourceLocation& loc)
-        : Expression(loc),
-          functionName(std::move(functionName))
-    {
-    }
-
-    const std::string& GetFunctionName() const
-    {
-        return functionName;
-    }
-
-    void AddArgument(Expression* argument)
-    {
-        arguments.emplace_back(argument);
-    }
-
-    std::size_t GetArgumentCount() const
-    {
-        return arguments.size();
-    }
-
-    const Expression* GetArgument(std::size_t index) const
-    {
-        return arguments.at(index).get();
-    }
-
-    Expression* GetArgument(std::size_t index)
-    {
-        return arguments.at(index).get();
-    }
-
-    void printout() const override
-    {
-        std::cout << "FunctionCallExpr"
-                  << " name=" << functionName
-                  << " arguments=" << arguments.size()
-                  << " line=" << GetLocation().line
-                  << '\n';
-
-        for (const auto& argument : arguments) {
-            if (argument) {
-                argument->printout();
-            }
-        }
-    }
-
-private:
-    std::string functionName;
-    std::vector<ExpressionPtr> arguments;
-};
 
 } // namespace feelfem2
 

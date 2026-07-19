@@ -55,6 +55,7 @@ feelfem2::QuadratureSection* gQuadratureSection = nullptr;
   std::vector<std::string>* identifierList;
   feelfem2::Expression* expr;
 
+/* Expression */
   std::vector<feelfem2::Expression*>*exprList;
   std::vector<feelfem2::PointDecl*>* pointDeclList;
 
@@ -161,6 +162,9 @@ feelfem2::QuadratureSection* gQuadratureSection = nullptr;
 
 %type <node> quad_assignment_statement
 %type <node> quad_point_statement
+
+/* expression */
+%type <exprList> argument_list_opt
 
 
 
@@ -1135,39 +1139,180 @@ primary_expression
        }
 
     | IDENTIFIER '(' argument_list_opt ')'
-       { $$ = nullptr; free($1); }
+      {
+          auto* call =
+              new feelfem2::FunctionCallExpr(
+                  std::string($1),
+                  $3,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          $$ = call;
+
+          free($1);
+      }
     | '(' expression ')'
        { $$ = $2; }
     ;
 
+
 unary_expression
     : '+' expression %prec UPLUS
-       { $$ = $2; }
+      {
+          $$ = new feelfem2::UnaryExpr(
+              feelfem2::UnaryOperator::Plus,
+              $2,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | '-' expression %prec UMINUS
-       { $$ = $2; }
+      {
+          $$ = new feelfem2::UnaryExpr(
+              feelfem2::UnaryOperator::Minus,
+              $2,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | NOT expression
-       { $$ = $2; }
+      {
+          $$ = new feelfem2::UnaryExpr(
+              feelfem2::UnaryOperator::LogicalNot,
+              $2,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     ;
 
 binary_expression
     : expression '+' expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::Add,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression '-' expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::Subtract,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression '*' expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::Multiply,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression '/' expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::Divide,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression '^' expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::Power,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression '<' expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::Less,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression '>' expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::Greater,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression LE expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::LessEqual,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression GE expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::GreaterEqual,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression EQ expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::Equal,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression NE expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::NotEqual,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression AND expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::LogicalAnd,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     | expression OR expression
+      {
+          $$ = new feelfem2::BinaryExpr(
+              feelfem2::BinaryOperator::LogicalOr,
+              $1,
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+      }
     ;
+
 
 argument_list_opt
     : /* empty */
+      {
+          $$ = new std::vector<feelfem2::Expression*>;
+      }
     | expr_list
+      {  
+          $$ = $1;
+      }
     ;
 
 
