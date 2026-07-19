@@ -32,6 +32,7 @@ extern int yylineno;
 extern char *yytext;
 
 feelfem2::VarSection * gVarSection = nullptr;
+feelfem2::MeshSection * gMeshSection = nullptr;
 
 
 %}
@@ -64,6 +65,11 @@ feelfem2::VarSection * gVarSection = nullptr;
   std::vector<std::vector<std::string>>*holeIdentifierList;
   feelfem2::RegionBoundary* regionBoundary;
   std::vector<feelfem2::RegionDecl*>* regionDeclList;
+
+  std::vector<feelfem2::DomainDecl*>*domainDeclList;
+
+  std::vector<feelfem2::MeshStatement*>*meshStatementList;
+
 }
 
 %token <num> NUMBER
@@ -84,9 +90,6 @@ feelfem2::VarSection * gVarSection = nullptr;
 /* types */
 %type <node>program_model_statement
 
-%type <node> mesh_section
-%type <node> mesh_items
-%type <node> mesh_item
 
 %type <node> point_statement
 %type <pointDeclList> point_list
@@ -133,6 +136,16 @@ feelfem2::VarSection * gVarSection = nullptr;
 %type <regionBoundary> region_identifier_list
 %type <holeIdentifierList> hole_identifier_list
 
+%type <node> domain_statement
+%type <domainDeclList> domain_list
+%type <node> domain_argument
+
+%type <node> vertices_statement
+
+%type <node> mesh_section
+%type <meshStatementList> mesh_items
+%type <node> mesh_item
+
 
 
 /* precedence */
@@ -168,19 +181,36 @@ section
 
 mesh_section
     : MESH '{' mesh_items '}'
-       {
-          $$ = $3;
-       }
+      {
+          auto* section =
+              new feelfem2::MeshSection(
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* statement : *$3)
+          {
+              section->AddStatement(statement);
+          }
+          gMeshSection = section;
+
+          delete $3;
+
+          $$ = section;
+      }
     ;
 
 mesh_items
     : /* empty */
       {
-        $$ = nullptr;
+       $$ = new std::vector<feelfem2::MeshStatement*>;
       }
     | mesh_items mesh_item
       {
-        $$ = $1 ? $1 : $2;
+          $1->push_back(
+              static_cast<feelfem2::MeshStatement*>($2)
+          );
+
+          $$ = $1;
       }
     ;
 
@@ -191,19 +221,19 @@ mesh_item
         }
     | edge_statement
         {
-          $$ = nullptr;
+          $$ = $1;
         }
     | region_statement
         {
-          $$ = nullptr;
+          $$ = $1;
         }
     | domain_statement
         {
-          $$ = nullptr;
+          $$ = $1;
         }
     | vertices_statement
         {
-          $$ = nullptr;
+          $$ = $1;
         }
     ;
 
@@ -418,19 +448,68 @@ hole_identifier_list
 
 domain_statement
     : DOMAIN domain_list ';'
+      {
+          auto* statement =
+              new feelfem2::DomainStatement(
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* domain : *$2)
+          {
+              statement->AddDomain(domain);
+          }
+//          statement->printout();
+
+          delete $2;
+          $$ = statement;
+      }
     ;
 
 domain_list
     : domain_argument
+      {
+          $$ = new std::vector<feelfem2::DomainDecl*>;
+
+          $$->push_back(
+              static_cast<feelfem2::DomainDecl*>($1)
+          );
+      }
     | domain_list ',' domain_argument
+      {
+          $1->push_back(
+              static_cast<feelfem2::DomainDecl*>($3)
+          );
+
+          $$ = $1;
+      }
     ;
 
 domain_argument
     : IDENTIFIER '(' identifier_list ')'
+      {
+          auto* domain = new feelfem2::DomainDecl(
+              std::string($1),
+              $3,
+              feelfem2::SourceLocation{yylineno, 0}
+          );
+
+          $$ = domain;
+          free($1);
+      }
     ;
 
 vertices_statement
     : VERTICES '(' expression ')' ';'
+      {
+          auto* statement =
+              new feelfem2::VerticesStatement(
+                  $3,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+//          statement->printout();
+
+          $$ = statement;
+      }
     ;
 
 /* ===================== var ===================== */
@@ -989,6 +1068,12 @@ int main(int argc, char** argv)
         {
           std::cout << "\n--- VarSection AST ---\n";
           gVarSection->printout();
+        }
+
+        if(gMeshSection)
+        {
+          std::cout << "\n--- MeshSection AST ---\n";
+          gMeshSection->printout();
         }
 
 

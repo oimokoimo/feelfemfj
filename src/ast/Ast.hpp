@@ -16,6 +16,7 @@
 
 // mesh block
 #include "Mesh.hpp"
+#include "MeshSection.hpp"
 
 #include "PointDecl.hpp"
 #include "PointStatement.hpp"
@@ -26,6 +27,11 @@
 #include "RegionBoundary.hpp"
 #include "RegionDecl.hpp"
 #include "RegionStatement.hpp"
+
+#include "DomainDecl.hpp"
+#include "DomainStatement.hpp"
+
+#include "VerticesStatement.hpp"
 
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"
