@@ -70,6 +70,10 @@ feelfem2::MeshSection * gMeshSection = nullptr;
 
   std::vector<feelfem2::MeshStatement*>*meshStatementList;
 
+  /* quadrature */
+  std::vector<feelfem2::QuadratureItem *>* quadratureItemList;
+  std::vector<feelfem2::QuadratureVariableDeclarator *>*quadratureVariableDeclaratorList;
+
 }
 
 %token <num> NUMBER
@@ -99,8 +103,6 @@ feelfem2::MeshSection * gMeshSection = nullptr;
 %type <identifierList> identifier_list
 
 /* expression */
-%type <node> expression_list
-
 %type <expr> expression
 %type <exprList> expr_list
 
@@ -146,6 +148,17 @@ feelfem2::MeshSection * gMeshSection = nullptr;
 %type <meshStatementList> mesh_items
 %type <node> mesh_item
 
+/* quadrature */
+%type <node> quadrature_definition
+%type <quadratureItemList> quadrature_items
+%type <node> quadrature_item
+
+%type <node> quad_var_declaration
+%type <quadratureVariableDeclaratorList> quad_var_list
+%type <node> quad_var
+
+%type <node> quad_assignment_statement
+%type <node> quad_point_statement
 
 
 /* precedence */
@@ -756,48 +769,167 @@ field_decl
 
 /* ====================quadrature ====================== */
 quadrature_definition
-    : QUADRATURE IDENTIFIER '[' IDENTIFIER ']' '{' quadrature_items '}'
+    : QUADRATURE IDENTIFIER '[' IDENTIFIER ']'
+      '{' quadrature_items '}'
+      {
+          auto* definition =
+              new feelfem2::QuadratureDefinition(
+                  std::string($2),
+                  std::string($4),
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* item : *$7)
+          {
+              definition->AddItem(item);
+          }
+
+          delete $7;
+
+          $$ = definition;
+
+          free($2);
+          free($4);
+      }
     ;
 
 quadrature_items
     : /* empty */
+      {
+          $$ = new std::vector<feelfem2::QuadratureItem*>;
+      }
     | quadrature_items quadrature_item
+      {
+          $1->push_back(
+              static_cast<feelfem2::QuadratureItem*>($2)
+          );
+
+          $$ = $1;
+      }
     ;
 
 quadrature_item
     : quad_var_declaration
+      {
+          $$ = $1;
+      }
     | quad_assignment_statement
+      {
+          $$ = $1;
+      }
     | quad_point_statement
+      {
+          $$ = $1;
+      }
     ;
 
 quad_var_declaration
     : DOUBLE quad_var_list ';'
+      {
+          auto* declaration =
+              new feelfem2::QuadratureVariableDeclaration(
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          for (auto* declarator : *$2)
+          {
+              declaration->AddDeclarator(declarator);
+          }
+
+          delete $2;
+
+          $$ = declaration;
+      }
     ;
 
 quad_var_list
     : quad_var
+      {
+          $$ =
+              new std::vector<
+                  feelfem2::QuadratureVariableDeclarator*
+              >;
+
+          $$->push_back(
+              static_cast<
+                  feelfem2::QuadratureVariableDeclarator*
+              >($1)
+          );
+      }
     | quad_var_list ',' quad_var
+      {
+          $1->push_back(
+              static_cast<
+                  feelfem2::QuadratureVariableDeclarator*
+              >($3)
+          );
+
+          $$ = $1;
+      }
     ;
 
 quad_var
     : IDENTIFIER
+      {
+          $$ =
+              new feelfem2::QuadratureVariableDeclarator(
+                  std::string($1),
+                  nullptr,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          free($1);
+      }
     | IDENTIFIER '=' expression
+      {
+          $$ =
+              new feelfem2::QuadratureVariableDeclarator(
+                  std::string($1),
+                  $3,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          free($1);
+      }
     ;
 
 quad_assignment_statement
     : IDENTIFIER '=' expression ';'
+      {
+          $$ =
+              new feelfem2::QuadratureAssignment(
+                  std::string($1),
+                  $3,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          free($1);
+      }
     ;
 
 quad_point_statement
-    : '(' expression_list ')' ':' expression ';'
+    : '(' expr_list ')' ':' expression ';'
+      {
+          $$ =
+              new feelfem2::QuadraturePoint(
+                  $2,
+                  $5,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+      }
     ;
 
-expression_list
+expr_list
     : expression
-       {
-          $$ = nullptr;
-       }
-    | expression_list ',' expression
+      {
+          $$ = new std::vector<feelfem2::Expression*>;
+          $$->push_back($1);
+      }
+    | expr_list ',' expression
+      {
+          $1->push_back($3);
+          $$ = $1;
+      }
     ;
 
 
@@ -1021,18 +1153,6 @@ argument_list_opt
     | expr_list
     ;
 
-expr_list
-    : expression
-      {
-          $$ = new std::vector<feelfem2::Expression*>;
-          $$->push_back($1);
-      }
-    | expr_list ',' expression
-      {
-          $1->push_back($3);
-          $$ = $1;
-      }
-    ;
 
 identifier_list
     : IDENTIFIER

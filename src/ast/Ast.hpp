@@ -33,6 +33,15 @@
 
 #include "VerticesStatement.hpp"
 
+
+//quadrature
+#include "QuadratureAssignment.hpp"
+#include "QuadratureItem.hpp"
+#include "QuadratureVariableDeclaration.hpp"
+#include "QuadratureDefinition.hpp"
+#include "QuadraturePoint.hpp"
+#include "QuadratureVariableDeclarator.hpp"
+
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"
 // #include "SolveBlock.hpp"
