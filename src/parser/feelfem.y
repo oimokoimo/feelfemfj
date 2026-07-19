@@ -33,6 +33,8 @@ extern char *yytext;
 
 feelfem2::VarSection * gVarSection = nullptr;
 feelfem2::MeshSection * gMeshSection = nullptr;
+feelfem2::QuadratureSection* gQuadratureSection = nullptr;
+
 
 
 %}
@@ -161,6 +163,7 @@ feelfem2::MeshSection * gMeshSection = nullptr;
 %type <node> quad_point_statement
 
 
+
 /* precedence */
 %left OR
 %left AND
@@ -187,6 +190,20 @@ section
     | var_section
     | element_definition
     | quadrature_definition
+      {
+          auto* definition =
+              static_cast<feelfem2::QuadratureDefinition*>($1);
+
+          if (gQuadratureSection == nullptr)
+          {
+              gQuadratureSection =
+                  new feelfem2::QuadratureSection(
+                      definition->GetLocation()
+                  );
+          }
+
+          gQuadratureSection->AddDefinition(definition);
+      }
     | scheme_section
     ;
 
@@ -1194,6 +1211,11 @@ int main(int argc, char** argv)
         {
           std::cout << "\n--- MeshSection AST ---\n";
           gMeshSection->printout();
+        }
+        if (gQuadratureSection)
+        {
+          std::cout << "\n--- QuadratureSection AST ---\n";
+          gQuadratureSection->printout();
         }
 
 

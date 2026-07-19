@@ -48,7 +48,7 @@ public:
         items.emplace_back(item);
     }
 
-    const std::string& GetName() const
+    const std::string& GetQuadratureName() const
     {
         return name;
     }
@@ -56,6 +56,12 @@ public:
     const std::string& GetReferenceElementName() const
     {
         return referenceElementName;
+    }
+
+
+    void SetReferenceElementName(const std::string& name)
+    {
+        referenceElementName = name;
     }
 
     void printout() const override

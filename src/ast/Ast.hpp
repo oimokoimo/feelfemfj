@@ -41,6 +41,7 @@
 #include "QuadratureDefinition.hpp"
 #include "QuadraturePoint.hpp"
 #include "QuadratureVariableDeclarator.hpp"
+#include "QuadratureSection.hpp"
 
 // #include "VarBlock.hpp"
 // #include "SchemeBlock.hpp"

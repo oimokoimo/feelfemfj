@@ -78,6 +78,34 @@ quadrature tet2[tetra] {   /* quadratic order */
   (b,a,a) : 1.0 / 24.0;
 }
 
+
+quadrature tet3[tetra] {   /* Cubic order */
+  double p2,p4,p6;
+  double w,wm;
+
+  p2 =  1.0 / 2.0;
+  p4 =  1.0 / 4.0;
+  p6 =  1.0 / 6.0;
+
+  w  =  9.0 / 20.0 / 6.0;
+  wm = -4.0 /  5.0 / 6.0;
+
+  (p4,p4,p4) : wm;
+  (p2,p6,p6) : w;
+  (p6,p2,p6) : w;
+  (p6,p6,p2) : w;
+  (p6,p6,p6) : w;
+}
+
+quadrature gauss2x2[rect] {
+    double p =  0.577350269189626;
+    double pm= -0.577350269189626;
+   ( p, p): 1;
+   ( p,pm): 1;
+   (pm, p): 1;
+   (pm,pm): 1;
+}
+
 scheme {
 
  ProgramModel feelfem2018;
