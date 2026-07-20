@@ -43,6 +43,17 @@
 #include "QuadratureVariableDeclarator.hpp"
 #include "QuadratureSection.hpp"
 
+/*
+ * Element AST
+ */
+#include "ElementItem.hpp"
+#include "ElementVariableDeclarator.hpp"
+#include "ElementVariableDeclaration.hpp"
+#include "ElementAssignment.hpp"
+#include "ElementPoint.hpp"
+#include "ElementDefinition.hpp"
+#include "ElementSection.hpp"
+
 //expression
 #include "FunctionCallExpr.hpp"
 

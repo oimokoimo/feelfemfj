@@ -13,7 +13,10 @@
  */
 
 %code requires {
+#include <memory>
+#include <string>
 #include <vector>
+
 #include "../ast/Ast.hpp"
 
 }
@@ -34,7 +37,7 @@ extern char *yytext;
 feelfem2::VarSection * gVarSection = nullptr;
 feelfem2::MeshSection * gMeshSection = nullptr;
 feelfem2::QuadratureSection* gQuadratureSection = nullptr;
-
+feelfem2::ElementSection* gElementSection = nullptr;
 
 
 %}
@@ -76,6 +79,11 @@ feelfem2::QuadratureSection* gQuadratureSection = nullptr;
   /* quadrature */
   std::vector<feelfem2::QuadratureItem *>* quadratureItemList;
   std::vector<feelfem2::QuadratureVariableDeclarator *>*quadratureVariableDeclaratorList;
+
+  /* element */
+  std::vector<feelfem2::ElementItem *>*elementItemList;
+
+  std::vector<feelfem2::ElementVariableDeclarator*>* elementVariableDeclaratorList;
 
 }
 
@@ -163,6 +171,20 @@ feelfem2::QuadratureSection* gQuadratureSection = nullptr;
 %type <node> quad_assignment_statement
 %type <node> quad_point_statement
 
+/* element */
+%type <node> element_definition
+%type <elementItemList> element_items
+%type <node> element_item
+
+%type <node> elem_var_declaration
+%type <elementVariableDeclaratorList> elem_var_list
+%type <node> elem_var
+
+%type <node> elem_assignment_statement
+%type <node> elem_point_statement
+
+%type <exprList> elem_coord_list
+
 /* expression */
 %type <exprList> argument_list_opt
 
@@ -193,6 +215,20 @@ section
     : mesh_section
     | var_section
     | element_definition
+      {
+          auto* definition =
+              static_cast<feelfem2::ElementDefinition*>($1);
+
+          if (gElementSection == nullptr)
+          {
+              gElementSection =
+                  new feelfem2::ElementSection(
+                      definition->GetLocation()
+                  );
+          }
+
+          gElementSection->AddDefinition(definition);
+      }
     | quadrature_definition
       {
           auto* definition =
@@ -958,43 +994,197 @@ expr_list
 
 element_definition
     : ELEMENT IDENTIFIER '[' IDENTIFIER']' '{' element_items '}'
+      {
+          feelfem2::ElementDefinition::ItemList items;
+
+          items.reserve($7->size());
+
+          for (auto* item : *$7)
+          {
+              items.emplace_back(item);
+          }
+
+          delete $7;
+
+          $$ =
+              new feelfem2::ElementDefinition(
+                  std::string($2),
+                  std::string($4),
+                  std::move(items),
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          free($2);
+          free($4);
+      }
     ;
 
 element_items
     : /* empty */
+      {
+          $$ =
+              new std::vector<
+                  feelfem2::ElementItem*
+              >;
+      }
     | element_items element_item
+      {
+          $1->push_back(
+              static_cast<
+                  feelfem2::ElementItem*
+              >($2)
+          );
+
+          $$ = $1;
+      }
     ;
 
 element_item
     : elem_var_declaration
+      {
+          $$ = $1;
+      }
     | elem_assignment_statement
+      {
+          $$ = $1;
+      }
     | elem_point_statement
+      {
+          $$ = $1;
+      }
     ;
 elem_var_declaration
     : DOUBLE elem_var_list ';'
+      {
+          feelfem2::ElementVariableDeclaration::DeclaratorList
+              declarators;
+
+          declarators.reserve($2->size());
+
+          for (auto* declarator : *$2)
+          {
+              declarators.emplace_back(declarator);
+          }
+
+          delete $2;
+
+          $$ =
+              new feelfem2::ElementVariableDeclaration(
+                  std::move(declarators),
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+      }
     ;
 
 elem_var_list
     : elem_var
+      {
+          $$ =
+              new std::vector<
+                  feelfem2::ElementVariableDeclarator*
+              >;
+
+          $$->push_back(
+              static_cast<
+                  feelfem2::ElementVariableDeclarator*
+              >($1)
+          );
+      }
     | elem_var_list ',' elem_var
+      {
+          $1->push_back(
+              static_cast<
+                  feelfem2::ElementVariableDeclarator*
+              >($3)
+          );
+
+          $$ = $1;
+      }
     ;
 
 elem_var
     : IDENTIFIER
+      {
+          $$ =
+              new feelfem2::ElementVariableDeclarator(
+                  std::string($1),
+                  nullptr,
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          free($1);
+      }
     | IDENTIFIER '=' expression
+      {
+          $$ =
+              new feelfem2::ElementVariableDeclarator(
+                  std::string($1),
+                  std::unique_ptr<
+                      feelfem2::Expression
+                  >($3),
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          free($1);
+      }
     ;
 
 elem_assignment_statement
     : IDENTIFIER '=' expression ';'
+      {
+          $$ =
+              new feelfem2::ElementAssignment(
+                  std::string($1),
+                  std::unique_ptr<
+                      feelfem2::Expression
+                  >($3),
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+
+          free($1);
+      }
     ;
 
 elem_point_statement
     : '(' elem_coord_list ')' ':' expression ';'
+      {
+          feelfem2::ElementPoint::CoordinateList coordinates;
+
+          coordinates.reserve($2->size());
+
+          for (auto* coordinate : *$2)
+          {
+              coordinates.emplace_back(coordinate);
+          }
+
+          delete $2;
+
+          $$ =
+              new feelfem2::ElementPoint(
+                  std::move(coordinates),
+                  std::unique_ptr<
+                      feelfem2::Expression
+                  >($5),
+                  feelfem2::SourceLocation{yylineno, 0}
+              );
+      }
     ;
 
 elem_coord_list
     : expression
+      {
+          $$ =
+              new std::vector<
+                  feelfem2::Expression*
+              >;
+
+          $$->push_back($1);
+      }
     | elem_coord_list ',' expression
+      {
+          $1->push_back($3);
+          $$ = $1;
+      }
     ;
 
 
@@ -1362,6 +1552,12 @@ int main(int argc, char** argv)
           std::cout << "\n--- QuadratureSection AST ---\n";
           gQuadratureSection->printout();
         }
+        if (gElementSection)
+        {
+          std::cout << "\n--- ElementSection AST ---\n";
+          gElementSection->printout();
+        }
+
 
 
         return 0;
