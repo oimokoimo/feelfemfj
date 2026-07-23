@@ -85,6 +85,9 @@ feelfem2::ElementSection* gElementSection = nullptr;
 
   std::vector<feelfem2::ElementVariableDeclarator*>* elementVariableDeclaratorList;
 
+  /* scheme */
+  feelfem2::LValue * lvalue;
+
 }
 
 %token <num> NUMBER
@@ -184,6 +187,12 @@ feelfem2::ElementSection* gElementSection = nullptr;
 %type <node> elem_point_statement
 
 %type <exprList> elem_coord_list
+
+/* scheme */
+%type <node> statement
+%type <node> assignment_statement
+%type <node> if_statement
+%type <lvalue> lvalue
 
 /* expression */
 %type <exprList> argument_list_opt
@@ -1217,22 +1226,95 @@ program_model_statement
 
 statement
     : assignment_statement
+       {
+         $$ = $1;
+       }
     | if_statement
+       {
+         $$ = $1;
+       }
     | ';'
+       {
+         $$ = nullptr;
+       }
     ;
 
 assignment_statement
     : lvalue '=' expression ';'
+      {
+          $$ =
+              new feelfem2::AssignmentStatement(
+                  std::unique_ptr<
+                      feelfem2::LValue
+                  >($1),
+                  std::unique_ptr<
+                      feelfem2::Expression
+                  >($3),
+                  feelfem2::SourceLocation{
+                      yylineno,
+                      0
+                  }
+              );
+          $$->printout();
+      }
     ;
 
 lvalue
     : IDENTIFIER
+      {
+          $$ =
+              new feelfem2::LValue(
+                  std::string($1),
+                  feelfem2::SourceLocation{
+                      yylineno,
+                      0
+                  }
+              );
+
+          free($1);
+      }
     | IDENTIFIER '(' argument_list_opt ')'
+      {
+          feelfem2::LValue::ArgumentList arguments;
+
+          arguments.reserve($3->size());
+
+          for (auto* argument : *$3)
+          {
+              arguments.emplace_back(argument);
+          }
+
+          delete $3;
+
+          $$ =
+              new feelfem2::LValue(
+                  std::string($1),
+                  std::move(arguments),
+                  feelfem2::SourceLocation{
+                      yylineno,
+                      0
+                  }
+              );
+
+          free($1);
+      }
     ;
 
 if_statement
     : IF '(' expression ')' THEN statement_list ENDIF ';'
+      {
+          /*
+           * IfStatement AST is not implemented yet.
+           */
+          $$ = nullptr;
+      }
     | IF '(' expression ')' THEN statement_list ELSE statement_list ENDIF ';'
+      {
+          /*
+           * IfStatement AST is not implemented yet.
+           */
+          $$ = nullptr;
+      }
     ;
 
 statement_list
@@ -1534,7 +1616,11 @@ int main(int argc, char** argv)
     if (yyparse() == 0) {
         std::printf("Parse OK\n");
 
+    char *debug = nullptr;
+
 // varSection
+
+      if (debug) {
 
         if(gVarSection)
         {
@@ -1557,6 +1643,7 @@ int main(int argc, char** argv)
           std::cout << "\n--- ElementSection AST ---\n";
           gElementSection->printout();
         }
+       }
 
 
 

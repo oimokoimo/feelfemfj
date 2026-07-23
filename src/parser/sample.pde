@@ -110,6 +110,11 @@ scheme {
 
  ProgramModel feelfem2018;
 
+    dt = 0.2;
+    dtr = 1.0 / dt;
+    iptr = 0;
+    u(i) = u(i) + 1.0;
+
  solve [u,v; tu,tv] {
     solver bicgstab;
     quadrature tri4;
@@ -118,7 +123,7 @@ scheme {
     weq: integral(dx(v)*dx(tv)+dy(v)*dy(tv))+integral[tri2](v*tv)-bintegral(h*tv) = 0;
 
     dbc : u = 100, on ab;
-    nbc : g = dk(u-100), on a,b;
+    nbc : g = dk*(u-100), on a,b;
  }
  dt = 0;
  dt = -10;

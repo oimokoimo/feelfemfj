@@ -54,6 +54,14 @@
 #include "ElementDefinition.hpp"
 #include "ElementSection.hpp"
 
+/*
+ * scheme statement AST
+ */
+#include "SchemeStatement.hpp"
+#include "LValue.hpp"
+#include "AssignmentStatement.hpp"
+
+
 //expression
 #include "FunctionCallExpr.hpp"
 
