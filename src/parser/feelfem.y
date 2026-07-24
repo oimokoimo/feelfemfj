@@ -87,6 +87,7 @@ feelfem2::ElementSection* gElementSection = nullptr;
 
   /* scheme */
   feelfem2::LValue * lvalue;
+  std::vector<feelfem2::SchemeStatement *> * schemeStatementList;
 
 }
 
@@ -190,9 +191,11 @@ feelfem2::ElementSection* gElementSection = nullptr;
 
 /* scheme */
 %type <node> statement
+%type <schemeStatementList> statement_list
 %type <node> assignment_statement
 %type <node> if_statement
 %type <lvalue> lvalue
+
 
 /* expression */
 %type <exprList> argument_list_opt
@@ -1255,7 +1258,7 @@ assignment_statement
                       0
                   }
               );
-          $$->printout();
+      //    $$->printout();
       }
     ;
 
@@ -1303,23 +1306,140 @@ lvalue
 if_statement
     : IF '(' expression ')' THEN statement_list ENDIF ';'
       {
-          /*
-           * IfStatement AST is not implemented yet.
-           */
-          $$ = nullptr;
+          feelfem2::StatementList::StatementContainer
+              thenStatements;
+
+          thenStatements.reserve($6->size());
+
+          for (auto* statement : *$6)
+          {
+              thenStatements.emplace_back(statement);
+          }
+
+          delete $6;
+
+          auto thenPart =
+              std::make_unique<
+                  feelfem2::StatementList
+              >(
+                  std::move(thenStatements),
+                  feelfem2::SourceLocation{
+                      yylineno,
+                      0
+                  }
+              );
+
+          $$ =
+              new feelfem2::IfStatement(
+                  std::unique_ptr<
+                      feelfem2::Expression
+                  >($3),
+                  std::move(thenPart),
+                  nullptr,
+                  feelfem2::SourceLocation{
+                      yylineno,
+                      0
+                  }
+              );
       }
     | IF '(' expression ')' THEN statement_list ELSE statement_list ENDIF ';'
       {
-          /*
-           * IfStatement AST is not implemented yet.
-           */
-          $$ = nullptr;
+          feelfem2::StatementList::StatementContainer
+              thenStatements;
+
+          thenStatements.reserve($6->size());
+
+          for (auto* statement : *$6)
+          {
+              thenStatements.emplace_back(statement);
+          }
+
+          delete $6;
+
+          feelfem2::StatementList::StatementContainer
+              elseStatements;
+
+          elseStatements.reserve($8->size());
+
+          for (auto* statement : *$8)
+          {
+              elseStatements.emplace_back(statement);
+          }
+
+          delete $8;
+
+          auto thenPart =
+              std::make_unique<
+                  feelfem2::StatementList
+              >(
+                  std::move(thenStatements),
+                  feelfem2::SourceLocation{
+                      yylineno,
+                      0
+                  }
+              );
+
+          auto elsePart =
+              std::make_unique<
+                  feelfem2::StatementList
+              >(
+                  std::move(elseStatements),
+                  feelfem2::SourceLocation{
+                      yylineno,
+                      0
+                  }
+              );
+
+          $$ =
+              new feelfem2::IfStatement(
+                  std::unique_ptr<
+                      feelfem2::Expression
+                  >($3),
+                  std::move(thenPart),
+                  std::move(elsePart),
+                  feelfem2::SourceLocation{
+                      yylineno,
+                      0
+                  }
+              );
       }
     ;
 
 statement_list
     : /* empty */
+      {
+          $$ =
+              new std::vector<
+                  feelfem2::SchemeStatement*
+              >;
+      }
     | statement_list statement
+      {
+          if ($2 != nullptr)
+          {
+              auto* schemeStatement =
+                  dynamic_cast<
+                      feelfem2::SchemeStatement*
+                  >($2);
+
+              if (schemeStatement != nullptr)
+              {
+                  $1->push_back(schemeStatement);
+              }
+              else
+              {
+                  std::cerr
+                      << "Internal parser error: "
+                      << "statement is not a SchemeStatement"
+                      << " at line " << yylineno
+                      << "\n";
+
+                  delete $2;
+              }
+          }
+
+          $$ = $1;
+      }
     ;
 
 /* ======== solve block ============================= */

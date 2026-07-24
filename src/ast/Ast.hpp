@@ -58,8 +58,10 @@
  * scheme statement AST
  */
 #include "SchemeStatement.hpp"
+#include "StatementList.hpp"
 #include "LValue.hpp"
 #include "AssignmentStatement.hpp"
+#include "IfStatement.hpp"
 
 
 //expression

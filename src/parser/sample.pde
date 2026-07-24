@@ -127,4 +127,13 @@ scheme {
  }
  dt = 0;
  dt = -10;
+
+ if( dt > 0 ) then
+      dt = 1;
+      if(iptr >0) then
+        iptr = 2;
+      endif;
+ else
+      dt = -1;
+endif;
 }
